@@ -260,6 +260,8 @@ contract LockedStakingPools is Initializable, ILockedStaking {
    * @param amount staking amount
    */
   function stake(uint256 poolId, uint256 amount) external payable {
+    if (amount == 0) revert InvalidArguments();
+
     LockedPoolInfo memory pool = poolInfo[poolId];
     if (pool.timelock == 0 || pool.enabled == false) revert PoolClosed(poolId);
     _updateAccYield(pool.stakeToken);
@@ -274,6 +276,7 @@ contract LockedStakingPools is Initializable, ILockedStaking {
     StakingInfo memory staking = StakingInfo(
       msg.sender,
       amount,
+      block.timestamp,
       block.timestamp + pool.timelock,
       yieldAmount,
       yieldDebt
@@ -304,6 +307,40 @@ contract LockedStakingPools is Initializable, ILockedStaking {
       pool.yieldToken,
       pool.stakeToken,
       amount
+    );
+  }
+
+  function extendsPosition(uint256 poolId, uint256 stakeId, uint256 extraDuration) external {
+    LockedPoolInfo memory pool = poolInfo[poolId];
+    if (pool.timelock == 0) revert PoolNotExisted(poolId);
+    _updateAccYield(pool.stakeToken);
+
+    StakingInfo storage staked = stakeInfo[poolId][stakeId];
+    if (staked.amount == 0) revert NoStaking();
+    if (staked.user != msg.sender) revert NotStaker(msg.sender);
+
+    uint256 yieldedAmnt = (staked.amount *
+      accYieldPerStaked[pool.stakeToken]) /
+      1e24 -
+      staked.yieldDebt;
+
+    staked.unlockTime += extraDuration;
+    if (staked.unlockTime - staked.stakeTime > (365 * 86400 * 10)) revert ExceededMaxDuration();
+
+    uint256 extraYield = (staked.amount * pool.yieldAPY * extraDuration) /
+      YIELD_DENOM /
+      365 /
+      86400;
+
+    staked.yieldAmount += extraYield;
+    staked.yieldDebt = (staked.amount * accYieldPerStaked[pool.stakeToken]) / 1e24 - yieldedAmnt;
+
+    TokenTransfer._mintToken(pool.yieldToken, msg.sender, extraYield);
+
+    emit Extend(
+      poolId,
+      stakeId,
+      extraDuration
     );
   }
 

@@ -78,6 +78,22 @@ describe('LockedStakingPools test - ETH', () => {
     await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
   });
 
+  it('cannot stake using usdb token', async () => {
+    await setupLockedStaking(
+      deployer,
+      role,
+      pools,
+      ethers.constants.AddressZero,
+      fyEthtoken
+    );
+
+    await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
+    await pools.connect(stakers[0]).stake(0, DECIMAL);
+
+    const ts = (await getCurrentTs()) ?? 0;
+
+  });
+
   it('staking return yield token', async () => {
     await setupLockedStaking(
       deployer,
@@ -478,7 +494,6 @@ describe('LockedStakingPools test - ETH', () => {
     await blast.connect(fund).setClaimableYield(pools.address, DECIMAL, {
       value: DECIMAL,
     });
-
     await fyEthtoken.connect(stakers[0]).approve(pools.address, 0);
     const initBal = await ethers.provider.getBalance(stakers[0].address);
     const tx = await pools.connect(stakers[0]).repayWithYieldToken(0, 0);
@@ -491,6 +506,127 @@ describe('LockedStakingPools test - ETH', () => {
     expect(await fyEthtoken.balanceOf(stakers[0].address)).deep.eq(
       DECIMAL.mul(3)
     );
+  });
+
+  it('can extend duration', async () => {
+    await setupLockedStaking(
+      deployer,
+      role,
+      pools,
+      ethers.constants.AddressZero,
+      fyEthtoken
+    );
+
+    await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
+    await pools.connect(stakers[0]).stake(0, DECIMAL, { value: DECIMAL });
+    let yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL);
+
+    const ts = (await getCurrentTs()) ?? 0;
+
+    await setTs(ts + DAY);
+    await pools.connect(stakers[1]).stake(0, DECIMAL, { value: DECIMAL });
+    yieldBal = await fyEthtoken.balanceOf(stakers[1].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(1));
+
+    await setTs(ts + 2 * DAY);
+    await pools.connect(stakers[0]).extendsPosition(0, 0, YEAR);
+    yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(2));
+
+    await setTs(ts + 2 * DAY + YEAR);
+    const tx = pools.connect(stakers[0]).unstake(0, 0);
+    await expect(tx).rejectedWith(`Locked(${ts + YEAR * 2})`);
+
+    await setTs(ts + 2 * YEAR);
+    await pools.connect(stakers[0]).unstake(0, 0);
+  });
+
+  it.only('cannot extend duration more than 10 years', async () => {
+    await setupLockedStaking(
+      deployer,
+      role,
+      pools,
+      ethers.constants.AddressZero,
+      fyEthtoken
+    );
+
+    await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
+    await pools.connect(stakers[0]).stake(0, DECIMAL, { value: DECIMAL });
+    let yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL);
+
+    console.log(YEAR);
+
+    const tx = pools.connect(stakers[0]).extendsPosition(0, 0, YEAR * 9 + 1);
+    expect(tx).rejectedWith('ExceedMaxDuration()');
+  });
+
+  it('repay after extend duration requires correct amount', async () => {
+    await setupLockedStaking(
+      deployer,
+      role,
+      pools,
+      ethers.constants.AddressZero,
+      fyEthtoken
+    );
+
+    await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
+    await pools.connect(stakers[0]).stake(0, DECIMAL, { value: DECIMAL });
+    let yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL);
+
+    const ts = (await getCurrentTs()) ?? 0;
+
+    await blast.connect(fund).setClaimableYield(pools.address, 1000, {
+      value: 1000,
+    });
+    await setTs(ts + DAY);
+    await pools.connect(stakers[1]).stake(0, DECIMAL, { value: DECIMAL });
+    yieldBal = await fyEthtoken.balanceOf(stakers[1].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(1));
+
+    await blast.connect(fund).setClaimableYield(pools.address, 1000, {
+      value: 1000,
+    });
+    await setTs(ts + 2 * DAY);
+    await pools.connect(stakers[0]).extendsPosition(0, 0, YEAR);
+    yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(2));
+
+    await blast.connect(fund).setClaimableYield(pools.address, DECIMAL, {
+      value: DECIMAL,
+    });
+    {
+      const initBal = await ethers.provider.getBalance(stakers[0].address);
+      const tx = await pools.connect(stakers[0]).repayWithStakeToken(0, 0, {
+        value: DECIMAL.mul(3).div(2).sub(1500).add(100000),
+      });
+      const txRec = await tx.wait();
+      if (!txRec) fail('tx failed');
+      const fee = txRec.gasUsed.mul(txRec.effectiveGasPrice);
+      const expectedBal = initBal
+        .sub(fee)
+        .sub(DECIMAL.div(2).mul(3).sub(1500))
+        .add(DECIMAL);
+      const bal = await ethers.provider.getBalance(stakers[0].address);
+      expect(bal.toBigInt()).eq(expectedBal.toBigInt());
+    }
+    {
+      const initBal = await ethers.provider.getBalance(stakers[1].address);
+      const tx = await pools
+        .connect(stakers[1])
+        .repayWithStakeToken(0, 1, { value: DECIMAL.div(2).add(100000) });
+      const txRec = await tx.wait();
+      if (!txRec) fail('tx failed');
+      const fee = txRec.gasUsed.mul(txRec.effectiveGasPrice);
+      const expectedBal = initBal
+        .sub(fee)
+        .add(DECIMAL)
+        .sub(DECIMAL.div(2).sub(500));
+      const bal = await ethers.provider.getBalance(stakers[1].address);
+      expect(bal.toBigInt()).eq(expectedBal.toBigInt());
+    }
   });
 });
 
@@ -693,9 +829,7 @@ describe('LockedStakingPools test - USDB', () => {
     const initBal = await usdb.balanceOf(stakers[0].address);
     await usdb.mint(stakers[0].address, DECIMAL.div(4));
     await usdb.connect(stakers[0]).approve(pools.address, DECIMAL.div(4));
-    await pools
-      .connect(stakers[0])
-      .repayWithStakeToken(0, 0);
+    await pools.connect(stakers[0]).repayWithStakeToken(0, 0);
     const expectedBal = initBal.add(DECIMAL);
     const bal = await usdb.balanceOf(stakers[0].address);
 
@@ -719,20 +853,18 @@ describe('LockedStakingPools test - USDB', () => {
 
     {
       const initBal = await usdb.balanceOf(stakers[0].address);
-      await pools
-        .connect(stakers[0])
-        .repayWithStakeToken(0, 0);
+      await pools.connect(stakers[0]).repayWithStakeToken(0, 0);
       const expectedBal = initBal.add(DECIMAL);
       const bal = await usdb.balanceOf(stakers[0].address);
       expect(bal).deep.eq(expectedBal);
     }
     {
       await usdb.mint(stakers[0].address, DECIMAL.mul(3).div(2).add(1));
-      await usdb.connect(stakers[0]).approve(pools.address, DECIMAL.mul(3).div(2).add(1));
-      const initBal = await usdb.balanceOf(stakers[0].address);
-      await pools
+      await usdb
         .connect(stakers[0])
-        .repayWithStakeToken(1, 0);
+        .approve(pools.address, DECIMAL.mul(3).div(2).add(1));
+      const initBal = await usdb.balanceOf(stakers[0].address);
+      await pools.connect(stakers[0]).repayWithStakeToken(1, 0);
       const expectedBal = initBal.add(DECIMAL.div(2)).toBigInt();
       const bal = (await usdb.balanceOf(stakers[0].address)).toBigInt();
       expect(bal).deep.eq(expectedBal);
@@ -804,5 +936,80 @@ describe('LockedStakingPools test - USDB', () => {
     expect(await yieldToken.balanceOf(stakers[0].address)).deep.eq(
       DECIMAL.mul(3)
     );
+  });
+
+  it('can extend duration', async () => {
+    await setupLockedStaking(deployer, role, pools, usdb.address, yieldToken);
+
+    await pools.addLockedPools(YEAR, 100000, usdb.address);
+    await usdbStake(stakers[0], 0, DECIMAL, 0);
+    let yieldBal = await yieldToken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL);
+
+    const ts = (await getCurrentTs()) ?? 0;
+
+    await usdbStake(stakers[1], 0, DECIMAL, ts + DAY);
+    yieldBal = await yieldToken.balanceOf(stakers[1].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(1));
+
+    await setTs(ts + 2 * DAY);
+    await pools.connect(stakers[0]).extendsPosition(0, 0, YEAR);
+    yieldBal = await yieldToken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(2));
+
+    await setTs(ts + 2 * DAY + YEAR);
+    const tx = pools.connect(stakers[0]).unstake(0, 0);
+    await expect(tx).rejectedWith(`Locked(${ts + YEAR * 2})`);
+
+    await setTs(ts + 2 * YEAR);
+    await pools.connect(stakers[0]).unstake(0, 0);
+  });
+
+  it('repay after extend duration requires correct amount', async () => {
+    await setupLockedStaking(deployer, role, pools, usdb.address, yieldToken);
+
+    await pools.addLockedPools(YEAR, 100000, usdb.address);
+    await usdbStake(stakers[0], 0, DECIMAL, 0);
+    let yieldBal = await yieldToken.balanceOf(stakers[0].address);
+    expect(yieldBal.toBigInt()).deep.equal(DECIMAL.toBigInt());
+
+    const ts = (await getCurrentTs()) ?? 0;
+
+    await usdb.setClaimableAmount(pools.address, 1000);
+    await usdbStake(stakers[1], 0, DECIMAL, ts + DAY);
+    yieldBal = await yieldToken.balanceOf(stakers[1].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(1));
+
+    await usdb.setClaimableAmount(pools.address, 1000);
+    await setTs(ts + 2 * DAY);
+    await pools.connect(stakers[0]).extendsPosition(0, 0, YEAR);
+    yieldBal = await yieldToken.balanceOf(stakers[0].address);
+    expect(yieldBal).deep.equal(DECIMAL.mul(2));
+
+    await usdb.setClaimableAmount(pools.address, DECIMAL);
+    {
+      await usdb.mint(stakers[0].address, DECIMAL.mul(1000));
+      const initBal = await usdb.balanceOf(stakers[0].address);
+      await usdb
+        .connect(stakers[0])
+        .approve(pools.address, DECIMAL.mul(3).div(2).sub(1500).add(100000));
+      await pools.connect(stakers[0]).repayWithStakeToken(0, 0);
+      const expectedBal = initBal
+        .sub(DECIMAL.div(2).mul(3).sub(1500))
+        .add(DECIMAL);
+      const bal = await usdb.balanceOf(stakers[0].address);
+      expect(bal.toBigInt()).eq(expectedBal.toBigInt());
+    }
+    {
+      await usdb.mint(stakers[1].address, DECIMAL.mul(1000));
+      const initBal = await usdb.balanceOf(stakers[1].address);
+      await usdb
+        .connect(stakers[1])
+        .approve(pools.address, DECIMAL.div(2).add(100000));
+      await pools.connect(stakers[1]).repayWithStakeToken(0, 1);
+      const expectedBal = initBal.add(DECIMAL).sub(DECIMAL.div(2).sub(500));
+      const bal = await usdb.balanceOf(stakers[1].address);
+      expect(bal.toBigInt()).eq(expectedBal.toBigInt());
+    }
   });
 });

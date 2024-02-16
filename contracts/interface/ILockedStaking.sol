@@ -11,6 +11,7 @@ interface ILockedStaking {
   error Locked(uint256 until);
   error NotStaker(address user);
   error InsufficientAmount(uint256 required);
+  error ExceededMaxDuration();
 
   struct LockedPoolInfo {
     uint256 timelock;
@@ -25,6 +26,7 @@ interface ILockedStaking {
   struct StakingInfo {
     address user;
     uint256 amount;
+    uint256 stakeTime;
     uint256 unlockTime;
     uint256 yieldAmount;
     uint256 yieldDebt; // used for calculate generated yield
@@ -50,9 +52,15 @@ interface ILockedStaking {
 
   event Unstake(
     uint256 poolId,
-    uint256 staketId,
+    uint256 stakeId,
     address stakeToken,
     uint256 totalAmount
+  );
+  
+  event Extend(
+    uint256 poolId,
+    uint256 stakeId,
+    uint256 duration
   );
 
   event Repay(
