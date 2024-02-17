@@ -15,9 +15,9 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
     log: true,
   });
 
-  const usdb = await deploy('fyUSDB', {
+  const usdb = await deploy('fyUSD', {
     from: deployer.address,
-    args: ['future yield USDB', 'USDB', roleControl.address],
+    args: ['future yield USDB', 'USD', roleControl.address],
     contract: 'YieldToken',
     log: true,
   });
@@ -31,7 +31,7 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
     console.log('grant whitelist admin role for deployer...')
     const tx = await roleContract.grantRole(whitelistRole, deployer.address);
     const rec = await tx.wait();
-    console.log(`tx ${rec?.hash} completed using ${rec?.gasUsed} wei`);
+    console.log(`tx ${rec?.transactionHash} completed using ${rec?.gasUsed} wei`);
   }
   
 };
