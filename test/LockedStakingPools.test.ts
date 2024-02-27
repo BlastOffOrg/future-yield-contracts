@@ -542,7 +542,7 @@ describe('LockedStakingPools test - ETH', () => {
     await pools.connect(stakers[0]).unstake(0, 0);
   });
 
-  it.only('cannot extend duration more than 10 years', async () => {
+  it('cannot extend duration more than 10 years', async () => {
     await setupLockedStaking(
       deployer,
       role,

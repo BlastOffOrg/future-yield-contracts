@@ -46,4 +46,13 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
       `tx ${rec?.transactionHash} completed using ${rec?.gasUsed} wei`
     );
   }
+
+  if (!(await fyEthContract.whitelist(pool.address))) {
+    console.log('Whitelist staking pools...');
+    const tx = await fyEthContract.whitelistAddress(pool.address);
+    const rec = await tx.wait();
+    console.log(
+      `tx ${rec?.transactionHash} completed using ${rec?.gasUsed} wei`
+    );
+  }
 };

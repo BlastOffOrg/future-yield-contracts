@@ -217,6 +217,20 @@ contract LockedStakingPools is Initializable, ILockedStaking {
   }
 
   /**
+   * @dev get user stake ids
+   * 
+   * @param poolId poolId
+   * @param account account address
+   */
+  function getUserStakesIds(uint256 poolId, address account) external view returns (uint256[] memory) {
+    return userStakeIds[poolId][account];
+  }
+
+  function getUserStakeIdByIndex(uint256 poolId, address account, uint256 index) external view returns (uint256) {
+    return userStakeIds[poolId][account][index];
+  }
+
+  /**
    * @dev get number of staking times of an account in a pool
    *
    * @param poolId poolId

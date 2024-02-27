@@ -22,30 +22,30 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
     from: deployer.address,
     log: true,
   });
-  await execute(
-    'USDIDOPool',
-    {
-      log: true,
-      from: deployer.address,
-    },
-    'init',
-    '0x4200000000000000000000000000000000000022',
-    fyUSD.address,
-    ethers.constants.AddressZero,
-    18,
-    deployer.address
-  );
-  await execute(
-    'ETHIDOPool',
-    {
-      log: true,
-      from: deployer.address,
-    },
-    'init',
-    fyEth.address,
-    ethers.constants.AddressZero,
-    18,
-    deployer.address,
-    false
-  );
+  // await execute(
+  //   'USDIDOPool',
+  //   {
+  //     log: true,
+  //     from: deployer.address,
+  //   },
+  //   'init',
+  //   '0x4200000000000000000000000000000000000022',
+  //   fyUSD.address,
+  //   ethers.constants.AddressZero,
+  //   18,
+  //   deployer.address
+  // );
+  // await execute(
+  //   'ETHIDOPool',
+  //   {
+  //     log: true,
+  //     from: deployer.address,
+  //   },
+  //   'init',
+  //   fyEth.address,
+  //   ethers.constants.AddressZero,
+  //   18,
+  //   deployer.address,
+  //   false
+  // );
 };
