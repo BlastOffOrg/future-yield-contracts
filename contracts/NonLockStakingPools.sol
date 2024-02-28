@@ -119,7 +119,7 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
 
     poolInfo[poolId].totalStaked += amount;
 
-    TokenTransfer._depositToken(pool.stakeToken, address(this), amount);
+    TokenTransfer._depositToken(pool.stakeToken, msg.sender, amount);
 
     emit Stake(poolId, pool.yieldAPY, pool.yieldToken, pool.stakeToken, amount);
   }

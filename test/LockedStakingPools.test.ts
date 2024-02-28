@@ -78,22 +78,6 @@ describe('LockedStakingPools test - ETH', () => {
     await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
   });
 
-  it('cannot stake using usdb token', async () => {
-    await setupLockedStaking(
-      deployer,
-      role,
-      pools,
-      ethers.constants.AddressZero,
-      fyEthtoken
-    );
-
-    await pools.addLockedPools(YEAR, 100000, ethers.constants.AddressZero);
-    await pools.connect(stakers[0]).stake(0, DECIMAL);
-
-    const ts = (await getCurrentTs()) ?? 0;
-
-  });
-
   it('staking return yield token', async () => {
     await setupLockedStaking(
       deployer,
@@ -555,8 +539,6 @@ describe('LockedStakingPools test - ETH', () => {
     await pools.connect(stakers[0]).stake(0, DECIMAL, { value: DECIMAL });
     let yieldBal = await fyEthtoken.balanceOf(stakers[0].address);
     expect(yieldBal).deep.equal(DECIMAL);
-
-    console.log(YEAR);
 
     const tx = pools.connect(stakers[0]).extendsPosition(0, 0, YEAR * 9 + 1);
     expect(tx).rejectedWith('ExceedMaxDuration()');

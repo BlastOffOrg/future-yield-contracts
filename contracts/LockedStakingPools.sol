@@ -275,6 +275,8 @@ contract LockedStakingPools is Initializable, ILockedStaking {
    */
   function stake(uint256 poolId, uint256 amount) external payable {
     if (amount == 0) revert InvalidArguments();
+    // revert if stake over 100 times in a pool to prevent out of gas when unstake
+    if (userStakeIds[poolId][msg.sender].length > 100) revert TooManyStake();
 
     LockedPoolInfo memory pool = poolInfo[poolId];
     if (pool.timelock == 0 || pool.enabled == false) revert PoolClosed(poolId);
@@ -303,8 +305,6 @@ contract LockedStakingPools is Initializable, ILockedStaking {
 
     poolInfo[poolId].totalStaked += amount;
     if (userStakeIds[poolId][msg.sender].length == 0) {
-      // revert if stake over 100 times in a pool to prevent out of gas when unstake
-      if (userStakeIds[poolId][msg.sender].length > 100) revert TooManyStake();
       noUsersStaked[poolId] += 1;
     }
     userStakeIds[poolId][msg.sender].push(stakeId);
