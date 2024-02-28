@@ -46,6 +46,11 @@ module.exports = {
       accounts: [process.env.TESTNET_DEPLOYER],
       gasMultiplier: 1.2,
     },
+    blast: {
+      url: process.env.BLAST_PROVIDER,
+      accounts: [process.env.MAINNET_DEPLOYER],
+      gasMultiplier: 1.2,
+    },
   },
 
   paths: {
