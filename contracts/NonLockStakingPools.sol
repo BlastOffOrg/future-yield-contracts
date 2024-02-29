@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interface/IERC20Mintable.sol";
+import "./interface/IERC20Rebasing.sol";
 import "./interface/INonLockStaking.sol";
 import "./interface/IRoleControl.sol";
 import "./interface/IBlast.sol";
@@ -24,12 +25,13 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
   mapping(uint256 => mapping(address => StakePosition)) userStakes;
   mapping(uint256 => address[]) listUsers;
 
+  IERC20Rebasing public USDB;
+  IBlast public blast;
+
   function init(address roleControl_, address treasury_) external initializer {
     roleControl = IRoleControl(roleControl_);
     if (treasury_ != address(0)) {
       treasury = treasury_;
-      IBlast(0x4300000000000000000000000000000000000002)
-        .configureClaimableYield();
     }
   }
 
@@ -39,16 +41,45 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
     _;
   }
 
+  /**
+   * set USDB token address
+   *
+   * @param usdb USDB token address
+   */
+  function setUSDBRebasing(address usdb) external onlyPoolAdmin {
+    USDB = IERC20Rebasing(usdb);
+    USDB.configure(RebaseYieldMode.CLAIMABLE);
+  }
+
+  /**
+   * set native blast contract
+   *
+   * @param _blast blast address
+   */
+  function setBlast(address _blast) external onlyPoolAdmin {
+    blast = IBlast(_blast);
+    blast.configureClaimableYield();
+  }
+
   function setTreasury(address _treasury) external onlyPoolAdmin {
     treasury = _treasury;
   }
 
   function claimNativeYield() external onlyPoolAdmin {
-    IBlast(0x4300000000000000000000000000000000000002).claimAllYield(
+    IBlast(blast).claimAllYield(
       address(this),
       treasury
     );
   }
+  
+  /**
+   * Admin claims native USDB yield and send to treasury address
+   */
+  function claimUSDBYield() external onlyPoolAdmin {
+    uint256 amount = USDB.getClaimableAmount(address(this));
+    USDB.claim(treasury, amount);
+  }
+
 
   function addSupportYieldTokens(
     address stakeToken,
