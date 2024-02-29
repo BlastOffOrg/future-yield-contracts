@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumberish } from 'ethers';
-import { ethers } from 'hardhat';
+import { ethers, deployments } from 'hardhat';
 import {
   BlastMock,
   ETHIDOPool,
@@ -13,13 +13,31 @@ import {
   YieldToken,
 } from '../../typechain';
 
+const { deploy } = deployments;
+
+const deployWithProxy = async (
+  deployer: SignerWithAddress,
+  contractName: string,
+  args: any[]
+) => {
+  const factory = await ethers.getContractFactory(contractName, deployer);
+  const proxyFact = await ethers.getContractFactory('TestProxy', deployer);
+  const impl = await factory.deploy();
+  const proxy = await proxyFact.deploy(
+    impl.address,
+    factory.interface.encodeFunctionData('init', args)
+  );
+  return factory.attach(proxy.address);
+};
+
 export const deployRole = async (
   deployer: SignerWithAddress
 ): Promise<RoleControl> => {
-  const factory = await ethers.getContractFactory('RoleControl', deployer);
-
-  const role = await factory.deploy();
-  await role.init();
+  const role = (await deployWithProxy(
+    deployer,
+    'RoleControl',
+    []
+  )) as RoleControl;
 
   return role;
 };
@@ -61,13 +79,10 @@ export const deployLockedStaking = async (
   role: RoleControl,
   treasury: string
 ): Promise<LockedStakingPools> => {
-  const factory = await ethers.getContractFactory(
-    'LockedStakingPools',
-    deployer
-  );
-
-  const staking = await factory.deploy();
-  await staking.init(await role.address, treasury);
+  const staking = (await deployWithProxy(deployer, 'LockedStakingPools', [
+    role.address,
+    treasury,
+  ])) as LockedStakingPools;
 
   const adminRole = await staking.POOL_ADMIN_ROLE();
   await role.connect(deployer).grantRole(adminRole, deployer.address);
@@ -95,13 +110,10 @@ export const deployNonLockStaking = async (
   role: RoleControl,
   treasury: string
 ): Promise<NonLockStakingPools> => {
-  const factory = await ethers.getContractFactory(
-    'NonLockStakingPools',
-    deployer
-  );
-
-  const staking = await factory.deploy();
-  await staking.init(role.address, treasury);
+  const staking = (await deployWithProxy(deployer, 'NonLockStakingPools', [
+    role.address,
+    treasury,
+  ])) as NonLockStakingPools;
 
   const adminRole = await staking.POOL_ADMIN_ROLE();
   await role.connect(deployer).grantRole(adminRole, deployer.address);
@@ -129,11 +141,23 @@ export const deployETHIDOPool = async (
   fyETH: string,
   idoToken: string,
   idoDecimals: BigNumberish,
-  treasury: string
+  treasury: string,
+  idoStart: number,
+  idoEnd: number,
+  minimuFund: BigNumberish
 ): Promise<ETHIDOPool> => {
   const factory = await ethers.getContractFactory('ETHIDOPool', deployer);
   const idoPool = await factory.deploy();
-  await idoPool.init(fyETH, idoToken, idoDecimals, treasury, true);
+  await idoPool.init(
+    fyETH,
+    idoToken,
+    idoDecimals,
+    treasury,
+    true,
+    idoStart,
+    idoEnd,
+    minimuFund
+  );
   return idoPool;
 };
 
@@ -143,11 +167,23 @@ export const deployUSDIDOPool = async (
   fyUSD: string,
   idoToken: string,
   idoDecimals: BigNumberish,
-  treasury: string
+  treasury: string,
+  idoStart: number,
+  idoEnd: number,
+  minimuFund: BigNumberish
 ): Promise<USDIDOPool> => {
   const factory = await ethers.getContractFactory('USDIDOPool', deployer);
   const idoPool = await factory.deploy();
-  await idoPool.init(usdb, fyUSD, idoToken, idoDecimals, treasury);
+  await idoPool.init(
+    usdb,
+    fyUSD,
+    idoToken,
+    idoDecimals,
+    treasury,
+    idoStart,
+    idoEnd,
+    minimuFund
+  );
   return idoPool;
 };
 

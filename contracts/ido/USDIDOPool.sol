@@ -10,9 +10,21 @@ contract USDIDOPool is Initializable, IDOPoolAbstract {
     address fyUSD_,
     address idoToken_,
     uint256 idoDecimals_,
-    address treasury_
+    address treasury_,
+    uint256 idoStartTime_,
+    uint256 idoEndTime_,
+    uint256 minimumFundingGoal_
   ) external initializer {
-    __IDOPoolAbstract_init(usdb_, fyUSD_, idoToken_, idoDecimals_, treasury_);
+    __IDOPoolAbstract_init(
+      usdb_,
+      fyUSD_,
+      idoToken_,
+      idoDecimals_,
+      treasury_,
+      idoStartTime_,
+      idoEndTime_,
+      minimumFundingGoal_
+    );
   }
 
   function _getTokenUSDPrice()

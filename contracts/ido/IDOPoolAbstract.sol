@@ -23,6 +23,10 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
   mapping(address => uint256) private totalFunded;
   mapping(address => Position) public accountPosition;
 
+  uint256 public idoStartTime;
+  uint256 public idoEndTime;
+  uint256 public minimumFundingGoal;
+
   modifier notFinalized() {
     if (isFinalized) revert AlreadyFinalized();
     _;
@@ -31,20 +35,30 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     if (!isFinalized) revert NotFinalized();
     _;
   }
+  modifier afterStart() {
+    if (block.timestamp < idoStartTime) revert NotStarted();
+    _;
+  }
 
   function __IDOPoolAbstract_init(
     address buyToken_,
     address fyToken_,
     address idoToken_,
     uint256 idoDecimals_,
-    address treasury_
+    address treasury_,
+    uint256 idoStartTime_,
+    uint256 idoEndTime_,
+    uint256 minimumFundingGoal_
   ) internal onlyInitializing {
     __IDOPoolAbstract_init_unchained(
       buyToken_,
       fyToken_,
       idoToken_,
       idoDecimals_,
-      treasury_
+      treasury_,
+      idoStartTime_,
+      idoEndTime_,
+      minimumFundingGoal_
     );
     __Ownable_init();
   }
@@ -54,13 +68,19 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     address fyToken_,
     address idoToken_,
     uint256 idoDecimals_,
-    address treasury_
+    address treasury_,
+    uint256 idoStartTime_,
+    uint256 idoEndTime_,
+    uint256 minimumFundingGoal_
   ) internal onlyInitializing {
     buyToken = buyToken_;
     fyToken = fyToken_;
     idoToken = idoToken_;
     idoDecimals = idoDecimals_;
     treasury = treasury_;
+    idoStartTime = idoStartTime_;
+    idoEndTime = idoEndTime_;
+    minimumFundingGoal = minimumFundingGoal_;
   }
 
   function setIDOToken(
@@ -86,7 +106,10 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
   }
 
   function finalize() external onlyOwner notFinalized {
-    idoSize = IERC20(idoToken).balanceOf(address(this));
+    if (block.timestamp < idoEndTime)
+      revert IDONotEnded();
+    else if (idoSize < minimumFundingGoal)
+      revert FudingGoalNotReached();
     (snapshotTokenPrice, snapshotPriceDecimals) = _getTokenUSDPrice();
     fundedUSDValue =
       ((totalFunded[buyToken] + totalFunded[fyToken]) * snapshotTokenPrice) /
@@ -121,7 +144,7 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     address receipient,
     address token,
     uint256 amount
-  ) external payable notFinalized {
+  ) external payable notFinalized afterStart {
     if (token != buyToken && token != fyToken)
       revert InvalidParticipateToken(token);
     Position storage position = accountPosition[receipient];

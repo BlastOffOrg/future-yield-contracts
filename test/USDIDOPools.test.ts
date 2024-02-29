@@ -28,7 +28,10 @@ describe('USD IDO pools test', () => {
       fyUSD.address,
       idoToken.address,
       await idoToken.decimals(),
-      treasury.address
+      treasury.address,
+      0,
+      0,
+      0
     );
   });
 

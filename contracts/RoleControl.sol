@@ -5,6 +5,10 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgrad
 
 contract RoleControl is AccessControlEnumerableUpgradeable {
 
+  constructor() {
+    _disableInitializers();
+  }
+
   function init() external initializer {
     __AccessControlEnumerable_init();
     _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);

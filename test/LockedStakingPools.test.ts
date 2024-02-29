@@ -20,7 +20,6 @@ import {
 import { DAY, YEAR, getCurrentTs, setTs } from './helpers/time';
 import { BigNumber, BigNumberish } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Sign } from 'crypto';
 use(chaiAsPromised);
 
 let DECIMAL = BigNumber.from(10n ** 18n);

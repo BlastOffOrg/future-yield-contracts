@@ -29,6 +29,9 @@ describe('ETH IDO pools test', () => {
       idoToken.address,
       await idoToken.decimals(),
       treasury.address,
+      0,
+      0,
+      0
     );
   });
 

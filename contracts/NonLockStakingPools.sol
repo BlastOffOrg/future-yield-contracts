@@ -24,6 +24,10 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
   mapping(uint256 => mapping(address => StakePosition)) userStakes;
   mapping(uint256 => address[]) listUsers;
 
+  constructor() {
+    _disableInitializers();
+  }
+
   function init(address roleControl_, address treasury_) external initializer {
     roleControl = IRoleControl(roleControl_);
     if (treasury_ != address(0)) {
