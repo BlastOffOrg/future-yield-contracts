@@ -64,13 +64,21 @@ module.exports = {
   etherscan: {
     apiKey: process.env.EXPLORER_API_KEY,
     customChains: [
+      // {
+      //   network: 'blast_sepolia',
+      //   chainId: 168587773,
+      //   urls: {
+      //     apiURL:
+      //       'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
+      //     browserURL: 'https://testnet.blastscan.io',
+      //   },
+      // },
       {
-        network: 'blast_sepolia',
-        chainId: 168587773,
+        network: 'blast',
+        chainId: 81457,
         urls: {
-          apiURL:
-            'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
-          browserURL: 'https://testnet.blastscan.io',
+          apiURL: 'https://api.blastscan.io/api',
+          browserURL: 'https://blastscan.io',
         },
       },
     ],

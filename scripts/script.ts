@@ -2,9 +2,10 @@ import * as hre from 'hardhat';
 import {
   IBlast__factory,
   LockedStakingPools__factory,
+  RoleControl__factory,
   YieldToken__factory,
 } from '../typechain';
-import { Contract } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -14,7 +15,13 @@ async function main() {
 
   const fyETH = await get('fyETH');
   const fyUSD = await get('fyUSD');
+  const role = await get('RoleControl');
+
+  const roleContract = RoleControl__factory.connect(role.address, deployer);
+
   const ethContract = YieldToken__factory.connect(fyETH.address, deployer);
+
+  const fyETHCont = YieldToken__factory.connect(fyETH.address, deployer);
 
   const stakePool = await get('LockedStakingPools');
   const stakeContract = LockedStakingPools__factory.connect(
@@ -27,23 +34,41 @@ async function main() {
     deployer
   );
 
-  await stakeContract.setBlast('0x4300000000000000000000000000000000000002');
-  await stakeContract.setUSDBRebasing(
-    '0x4300000000000000000000000000000000000003'
-  );
-  await stakeContract.addSupportYieldTokens(
-    ethers.constants.AddressZero,
-    fyETH.address
-  );
-  await stakeContract.addSupportYieldTokens(
-    '0x4300000000000000000000000000000000000003',
-    fyUSD.address
-  );
-  await stakeContract.addLockedPools(
-    15552000,
-    4000,
-    ethers.constants.AddressZero
-  );
+  // await stakeContract.setBlast('0x4300000000000000000000000000000000000002');
+  // await stakeContract.setUSDBRebasing(
+  //   '0x4300000000000000000000000000000000000003'
+  // );
+  // await stakeContract.configurePointsOperator(
+  //   deployer.address,
+  //   '0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800'
+  // );
+  // await stakeContract.addSupportYieldTokens(
+  //   ethers.constants.AddressZero,
+  //   fyETH.address
+  // );
+  // await stakeContract.addSupportYieldTokens(
+  //   '0x4300000000000000000000000000000000000003',
+  //   fyUSD.address
+  // );
+  // await stakeContract.addLockedPools(
+  //   157680000,
+  //   4000,
+  //   ethers.constants.AddressZero
+  // );
+
+  // await stakeContract.addLockedPools(
+  //   BigNumber.from('157680000'),
+  //   4000,
+  //   fyETH.address
+  // );
+  // const poolAdmin = await stakeContract.POOL_ADMIN_ROLE();
+  // console.log(await roleContract.hasRole(poolAdmin, deployer.address));
+
+  // await fyETHCont.whitelistAddress(deployer.address);
+
+  // await fyETHCont.setEnableWhitelist(false);
+
+  // console.log(await stakeContract.yieldTokens(ethers.constants.AddressZero));
 
 }
 
