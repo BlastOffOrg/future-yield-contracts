@@ -2,10 +2,10 @@ import * as hre from 'hardhat';
 import {
   IBlast__factory,
   LockedStakingPools__factory,
+  NonLockStakingPools__factory,
   RoleControl__factory,
   YieldToken__factory,
 } from '../typechain';
-import { BigNumber, Contract } from 'ethers';
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -29,12 +29,38 @@ async function main() {
     deployer
   );
 
+  const nonlock = await get('NonLockStakingPools');
+  const nonlockContract = NonLockStakingPools__factory.connect(
+    nonlock.address,
+    deployer
+  );
+
   const blast = IBlast__factory.connect(
     '0x4300000000000000000000000000000000000002',
     deployer
   );
 
-  // await stakeContract.setBlast('0x4300000000000000000000000000000000000002');
+  await nonlockContract.setBlast(blast.address);
+  await nonlockContract.setUSDBRebasing(
+    '0x4300000000000000000000000000000000000003'
+  );
+  await nonlockContract.configurePointsOperator(
+    deployer.address,
+    '0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800'
+  );
+  await nonlockContract.addSupportYieldTokens(
+    ethers.constants.AddressZero,
+    fyETH.address
+  );
+  await nonlockContract.addSupportYieldTokens(
+    '0x4300000000000000000000000000000000000003',
+    fyUSD.address
+  );
+  await nonlockContract.addPool(
+    4000,
+    ethers.constants.AddressZero,
+  )
+
   // await stakeContract.setUSDBRebasing(
   //   '0x4300000000000000000000000000000000000003'
   // );
@@ -69,7 +95,6 @@ async function main() {
   // await fyETHCont.setEnableWhitelist(false);
 
   // console.log(await stakeContract.yieldTokens(ethers.constants.AddressZero));
-
 }
 
 main()

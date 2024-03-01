@@ -11,6 +11,10 @@ import "./interface/IRoleControl.sol";
 import "./interface/IBlast.sol";
 import "./lib/TokenTransfer.sol";
 
+interface IBlastPoints {
+  function configurePointsOperator(address operator) external;
+}
+
 contract NonLockStakingPools is Initializable, INonLockStaking {
   using SafeERC20 for IERC20;
 
@@ -27,6 +31,7 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
 
   IERC20Rebasing public USDB;
   IBlast public blast;
+
   constructor() {
     _disableInitializers();
   }
@@ -64,17 +69,21 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
     blast.configureClaimableYield();
   }
 
+  function configurePointsOperator(
+    address operator,
+    address blastPointAddress
+  ) external onlyPoolAdmin {
+    IBlastPoints(address(blastPointAddress)).configurePointsOperator(operator);
+  }
+
   function setTreasury(address _treasury) external onlyPoolAdmin {
     treasury = _treasury;
   }
 
   function claimNativeYield() external onlyPoolAdmin {
-    IBlast(blast).claimAllYield(
-      address(this),
-      treasury
-    );
+    IBlast(blast).claimAllYield(address(this), treasury);
   }
-  
+
   /**
    * Admin claims native USDB yield and send to treasury address
    */
@@ -82,7 +91,6 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
     uint256 amount = USDB.getClaimableAmount(address(this));
     USDB.claim(treasury, amount);
   }
-
 
   function addSupportYieldTokens(
     address stakeToken,
@@ -178,7 +186,7 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
 
     TokenTransfer._transferToken(pool.stakeToken, msg.sender, stakeAmount);
     TokenTransfer._mintToken(pool.yieldToken, msg.sender, rewardAmount);
-    
+
     emit RewardClaim(poolId, pool.stakeToken, rewardAmount);
     emit Unstake(poolId, pool.stakeToken, position.amount, rewardAmount);
   }
@@ -204,7 +212,7 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
     position.lastCalcTs = block.timestamp;
 
     TokenTransfer._mintToken(pool.yieldToken, msg.sender, rewardAmount);
-    
+
     emit RewardClaim(poolId, pool.stakeToken, rewardAmount);
   }
 }
