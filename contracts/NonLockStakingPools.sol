@@ -27,6 +27,9 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
 
   IERC20Rebasing public USDB;
   IBlast public blast;
+  constructor() {
+    _disableInitializers();
+  }
 
   function init(address roleControl_, address treasury_) external initializer {
     roleControl = IRoleControl(roleControl_);

@@ -13,6 +13,7 @@ async function main() {
   const { get } = deployments;
 
   const fyETH = await get('fyETH');
+  const fyUSD = await get('fyUSD');
   const ethContract = YieldToken__factory.connect(fyETH.address, deployer);
 
   const stakePool = await get('LockedStakingPools');
@@ -26,11 +27,24 @@ async function main() {
     deployer
   );
 
-  // console.log("treasury", await stakeContract.treasury());
+  await stakeContract.setBlast('0x4300000000000000000000000000000000000002');
+  await stakeContract.setUSDBRebasing(
+    '0x4300000000000000000000000000000000000003'
+  );
+  await stakeContract.addSupportYieldTokens(
+    ethers.constants.AddressZero,
+    fyETH.address
+  );
+  await stakeContract.addSupportYieldTokens(
+    '0x4300000000000000000000000000000000000003',
+    fyUSD.address
+  );
+  await stakeContract.addLockedPools(
+    15552000,
+    4000,
+    ethers.constants.AddressZero
+  );
 
-  await ethContract.approve(stakePool.address, ethers.utils.parseEther('1000'));
-
-  console.log(await stakeContract.repayWithYieldToken(0, 0));
 }
 
 main()

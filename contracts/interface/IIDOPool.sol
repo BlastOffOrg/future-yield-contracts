@@ -8,7 +8,10 @@ interface IIDOPool {
   error NotFinalized();
   error NotStaker(address);
   error NoStaking();
-
+  error NotStarted();
+  error FudingGoalNotReached();
+  error IDONotEnded();
+  
   struct Position {
     address token;
     uint256 amount;

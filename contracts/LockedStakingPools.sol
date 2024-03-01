@@ -8,6 +8,10 @@ import "./interface/IBlast.sol";
 import "./interface/IERC20Rebasing.sol";
 import "./lib/TokenTransfer.sol";
 
+interface IBlastPoints {
+	function configurePointsOperator(address operator) external;
+}
+
 /**
  * @dev Lock staking pool contract
  *
@@ -32,6 +36,10 @@ contract LockedStakingPools is Initializable, ILockedStaking {
   mapping(address => uint256) public tokenTotalStaked;
   mapping(address => uint256) public accYieldPerStaked;
 
+  constructor() {
+    _disableInitializers();
+  }
+
   function init(address roleControl_, address treasury_) external initializer {
     roleControl = IRoleControl(roleControl_);
     treasury = treasury_;
@@ -41,6 +49,10 @@ contract LockedStakingPools is Initializable, ILockedStaking {
     if (!roleControl.hasRole(POOL_ADMIN_ROLE, msg.sender))
       revert NotPoolAdmin(msg.sender);
     _;
+  }
+
+  function configurePointsOperator(address operator, address blastPointAddress) external onlyPoolAdmin {
+    IBlastPoints(address(blastPointAddress)).configurePointsOperator(operator);
   }
 
   /**

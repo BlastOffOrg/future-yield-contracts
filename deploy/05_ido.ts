@@ -6,22 +6,22 @@ import {
 } from '../typechain';
 
 module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
-  const [deployer] = await ethers.getSigners();
-  console.log('deployed by:', deployer.address);
+  // const [deployer] = await ethers.getSigners();
+  // console.log('deployed by:', deployer.address);
 
-  const { deploy, get, execute } = deployments;
+  // const { deploy, get, execute } = deployments;
 
-  const fyEth = await get('fyETH');
-  const fyUSD = await get('fyUSD');
+  // const fyEth = await get('fyETH');
+  // const fyUSD = await get('fyUSD');
 
-  const usdPool = await deploy('USDIDOPool', {
-    from: deployer.address,
-    log: true,
-  });
-  const ethPool = await deploy('ETHIDOPool', {
-    from: deployer.address,
-    log: true,
-  });
+  // const usdPool = await deploy('USDIDOPool', {
+  //   from: deployer.address,
+  //   log: true,
+  // });
+  // const ethPool = await deploy('ETHIDOPool', {
+  //   from: deployer.address,
+  //   log: true,
+  // });
   // await execute(
   //   'USDIDOPool',
   //   {

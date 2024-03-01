@@ -6,17 +6,17 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
 
   const { deploy } = deployments;
 
-  // await deploy('RoleControl', {
-  //   from: deployer.address,
-  //   log: true,
-  //   proxy: {
-  //     proxyContract: 'OpenZeppelinTransparentProxy',
-  //     execute: {
-  //       init: {
-  //         methodName: 'init',
-  //         args: [],
-  //       },
-  //     },
-  //   },
-  // });
+  await deploy('RoleControl', {
+    from: deployer.address,
+    log: true,
+    proxy: {
+      proxyContract: 'OpenZeppelinTransparentProxy',
+      execute: {
+        init: {
+          methodName: 'init',
+          args: [],
+        },
+      },
+    },
+  });
 };
