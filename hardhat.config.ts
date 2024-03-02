@@ -45,11 +45,24 @@ module.exports = {
       url: process.env.BLAST_SEPOLIA_PROVIDER,
       accounts: [process.env.TESTNET_DEPLOYER],
       gasMultiplier: 1.2,
+      verify: {
+        etherscan: {
+          apiUrl:
+            'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
+          apiKey: process.env.EXPLORER_API_KEY,
+        },
+      },
     },
     blast: {
       url: process.env.BLAST_PROVIDER,
       accounts: [process.env.MAINNET_DEPLOYER],
       gasMultiplier: 1.2,
+      verify: {
+        etherscan: {
+          apiUrl: 'https://api.blastscan.io',
+          apiKey: process.env.EXPLORER_API_KEY,
+        },
+      },
     },
   },
 
@@ -61,26 +74,9 @@ module.exports = {
     deployments: './deployments',
   },
 
-  etherscan: {
-    apiKey: process.env.EXPLORER_API_KEY,
-    customChains: [
-      // {
-      //   network: 'blast_sepolia',
-      //   chainId: 168587773,
-      //   urls: {
-      //     apiURL:
-      //       'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
-      //     browserURL: 'https://testnet.blastscan.io',
-      //   },
-      // },
-      {
-        network: 'blast',
-        chainId: '81457',
-        urls: {
-          apiURL: 'https://api.blastscan.io/api',
-          browserURL: 'https://blastscan.io',
-        },
-      },
-    ],
-  },
+  verify: {
+    etherscan: {
+      apiKey: process.env.EXPLORER_API_KEY,
+    },
+  }
 };

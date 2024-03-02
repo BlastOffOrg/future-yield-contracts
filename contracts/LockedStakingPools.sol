@@ -83,7 +83,9 @@ contract LockedStakingPools is Initializable, ILockedStaking {
    * @param _treasury treasury wallet address
    */
   function setTreasury(address _treasury) external onlyPoolAdmin {
+    if (_treasury == address(0)) revert InvalidArguments();
     treasury = _treasury;
+    emit TreasuryChange(_treasury);
   }
 
   /**
@@ -155,6 +157,7 @@ contract LockedStakingPools is Initializable, ILockedStaking {
    */
   function closePool(uint256 poolId) external onlyPoolAdmin {
     poolInfo[poolId].enabled = false;
+    emit ClosePool(poolId);
   }
 
   /**
@@ -169,6 +172,7 @@ contract LockedStakingPools is Initializable, ILockedStaking {
     if (poolInfo[poolId].timelock == 0) revert PoolNotExisted(poolId);
 
     poolInfo[poolId].yieldAPY = yield;
+    emit PoolYieldChange(poolId, yield);
   }
 
   /**

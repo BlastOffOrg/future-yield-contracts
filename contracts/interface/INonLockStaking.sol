@@ -50,6 +50,12 @@ interface INonLockStaking {
     uint256 rewardAmount
   );
 
+  event ClosePool(uint256 id);
+
+  event TreasuryChange(address newTreasury);
+
+  event PoolYieldChange(uint256 poolId, uint256 yieldAPY);
+
   function stake(uint256 poolId, uint256 amount) external payable;
 
   function unstake(uint256 poolId) external;

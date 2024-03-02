@@ -9,6 +9,7 @@ interface IIDOPool {
   error NotStaker(address);
   error NoStaking();
   error NotStarted();
+  error AlreadyStarted();
   error FudingGoalNotReached();
   error IDONotEnded();
   

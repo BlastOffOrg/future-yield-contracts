@@ -77,7 +77,10 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
   }
 
   function setTreasury(address _treasury) external onlyPoolAdmin {
+    if (_treasury == address(0)) revert InvalidArguments();
     treasury = _treasury;
+
+    emit TreasuryChange(_treasury);
   }
 
   function claimNativeYield() external onlyPoolAdmin {
@@ -118,6 +121,8 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
   function closePool(uint256 poolId) external onlyPoolAdmin {
     poolInfo[poolId].enabled = false;
     poolInfo[poolId].yieldAPY = 0;
+
+    emit ClosePool(poolId);
   }
 
   function setPoolYield(uint256 poolId, uint256 yield) external onlyPoolAdmin {
@@ -125,6 +130,8 @@ contract NonLockStakingPools is Initializable, INonLockStaking {
     if (poolInfo[poolId].enabled == false) revert PoolNotExisted(poolId);
 
     poolInfo[poolId].yieldAPY = yield;
+
+    emit PoolYieldChange(poolId, yield);
   }
 
   function getUserStakePosition(

@@ -39,6 +39,12 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     if (block.timestamp < idoStartTime) revert NotStarted();
     _;
   }
+  modifier notStart() {
+    if (block.timestamp >= idoStartTime) revert AlreadyStarted();
+    _;
+  }
+  
+
 
   function __IDOPoolAbstract_init(
     address buyToken_,
@@ -87,6 +93,7 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     address _token,
     uint256 _idoDecimals
   ) external onlyOwner {
+    if (isFinalized) revert ('InvalidToken');
     idoToken = _token;
     idoDecimals = _idoDecimals;
   }
@@ -101,7 +108,7 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
    *
    * @param price usd price of 10 ** decimals of IDO token
    */
-  function setTokenPriceInUSD(uint256 price) external onlyOwner {
+  function setTokenPriceInUSD(uint256 price) external onlyOwner notStart {
     idoPrice = price;
   }
 

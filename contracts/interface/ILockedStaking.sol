@@ -56,12 +56,8 @@ interface ILockedStaking {
     address stakeToken,
     uint256 totalAmount
   );
-  
-  event Extend(
-    uint256 poolId,
-    uint256 stakeId,
-    uint256 duration
-  );
+
+  event Extend(uint256 poolId, uint256 stakeId, uint256 duration);
 
   event Repay(
     uint256 poolId,
@@ -70,6 +66,12 @@ interface ILockedStaking {
     uint256 totalStaked,
     uint256 repayAmount
   );
+
+  event ClosePool(uint256 id);
+
+  event TreasuryChange(address newTreasury);
+
+  event PoolYieldChange(uint256 poolId, uint256 yieldAPY);
 
   function stake(uint256 poolId, uint256 amount) external payable;
 
@@ -85,8 +87,5 @@ interface ILockedStaking {
     uint256 stakeId
   ) external payable;
 
-  function repayWithYieldToken(
-    uint256 poolId,
-    uint256 stakeId
-  ) external;
+  function repayWithYieldToken(uint256 poolId, uint256 stakeId) external;
 }
