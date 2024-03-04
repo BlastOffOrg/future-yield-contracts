@@ -22,6 +22,7 @@ async function main() {
   const ethContract = YieldToken__factory.connect(fyETH.address, deployer);
 
   const fyETHCont = YieldToken__factory.connect(fyETH.address, deployer);
+  const fyUSDCont = YieldToken__factory.connect(fyUSD.address, deployer);
 
   const stakePool = await get('LockedStakingPools');
   const stakeContract = LockedStakingPools__factory.connect(
@@ -35,66 +36,27 @@ async function main() {
     deployer
   );
 
-  const blast = IBlast__factory.connect(
-    '0x4300000000000000000000000000000000000002',
-    deployer
-  );
+  fyUSDCont.setEnableWhitelist(false);
 
-  await nonlockContract.setBlast(blast.address);
-  await nonlockContract.setUSDBRebasing(
-    '0x4300000000000000000000000000000000000003'
-  );
-  await nonlockContract.configurePointsOperator(
-    deployer.address,
-    '0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800'
-  );
-  await nonlockContract.addSupportYieldTokens(
-    ethers.constants.AddressZero,
-    fyETH.address
-  );
-  await nonlockContract.addSupportYieldTokens(
-    '0x4300000000000000000000000000000000000003',
-    fyUSD.address
-  );
-  await nonlockContract.addPool(
-    4000,
-    ethers.constants.AddressZero,
-  )
+  // const blast = IBlast__factory.connect(
+  //   '0x4300000000000000000000000000000000000002',
+  //   deployer
+  // );
 
-  // await stakeContract.setUSDBRebasing(
-  //   '0x4300000000000000000000000000000000000003'
-  // );
-  // await stakeContract.configurePointsOperator(
-  //   deployer.address,
-  //   '0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800'
-  // );
-  // await stakeContract.addSupportYieldTokens(
-  //   ethers.constants.AddressZero,
-  //   fyETH.address
-  // );
-  // await stakeContract.addSupportYieldTokens(
-  //   '0x4300000000000000000000000000000000000003',
-  //   fyUSD.address
-  // );
-  // await stakeContract.addLockedPools(
-  //   157680000,
-  //   4000,
-  //   ethers.constants.AddressZero
-  // );
+  // // await stakeContract.setUSDBRebasing(
+  // //   '0x4200000000000000000000000000000000000022'
+  // // );
+
+  // // await stakeContract.addSupportYieldTokens(
+  // //   '0x4200000000000000000000000000000000000022',
+  // //   fyUSD.address
+  // // );
 
   // await stakeContract.addLockedPools(
-  //   BigNumber.from('157680000'),
-  //   4000,
-  //   fyETH.address
+  //   15552000,
+  //   5000,
+  //   '0x4200000000000000000000000000000000000022'
   // );
-  // const poolAdmin = await stakeContract.POOL_ADMIN_ROLE();
-  // console.log(await roleContract.hasRole(poolAdmin, deployer.address));
-
-  // await fyETHCont.whitelistAddress(deployer.address);
-
-  // await fyETHCont.setEnableWhitelist(false);
-
-  // console.log(await stakeContract.yieldTokens(ethers.constants.AddressZero));
 }
 
 main()

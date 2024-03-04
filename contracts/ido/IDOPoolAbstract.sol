@@ -43,8 +43,6 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     if (block.timestamp >= idoStartTime) revert AlreadyStarted();
     _;
   }
-  
-
 
   function __IDOPoolAbstract_init(
     address buyToken_,
