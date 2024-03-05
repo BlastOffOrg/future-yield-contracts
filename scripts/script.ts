@@ -36,8 +36,6 @@ async function main() {
     deployer
   );
 
-  fyUSDCont.setEnableWhitelist(false);
-
   // const blast = IBlast__factory.connect(
   //   '0x4300000000000000000000000000000000000002',
   //   deployer

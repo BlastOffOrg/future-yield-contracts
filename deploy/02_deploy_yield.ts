@@ -2,11 +2,11 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { RoleControl__factory, YieldToken__factory } from '../typechain';
 
 module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
-  // const [deployer] = await ethers.getSigners();
-  // console.log('deployed by:', deployer.address);
+  const [deployer] = await ethers.getSigners();
+  console.log('deployed by:', deployer.address);
 
-  // const { deploy, get } = deployments;
-  // const roleControl = await get('RoleControl');
+  const { deploy, get } = deployments;
+  const roleControl = await get('RoleControl');
 
   // const eth = await deploy('fyETH', {
   //   from: deployer.address,
@@ -15,12 +15,12 @@ module.exports = async ({ ethers, deployments }: HardhatRuntimeEnvironment) => {
   //   log: true,
   // });
 
-  // const usdb = await deploy('fyUSD', {
-  //   from: deployer.address,
-  //   args: ['future yield USDB', 'USD', roleControl.address],
-  //   contract: 'YieldToken',
-  //   log: true,
-  // });
+  const usdb = await deploy('fyUSD', {
+    from: deployer.address,
+    args: ['future yield USDB', 'fyUSD', roleControl.address],
+    contract: 'YieldToken',
+    log: true,
+  });
 
   // const fyETHContract = YieldToken__factory.connect(eth.address, deployer);
   // const roleContract = RoleControl__factory.connect(roleControl.address, deployer);

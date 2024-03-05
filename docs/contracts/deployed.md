@@ -26,7 +26,9 @@ LockedStakingPoolsProxy : [0xd95773E5B1eeDC7fF302a70AcD0eb370927397D2](https://b
 
 LockedStakingPoolsImplementation: [0x0832e17eb957389aDd1441b6725Ba80C6ff583c1](https://blastscan.io/address/0x0832e17eb957389aDd1441b6725Ba80C6ff583c1)
 
-NonLockStakingPools: [0xd9747a98624f0B64B4412632C420672E16432334](https://blastscan.io/address/0xd9747a98624f0B64B4412632C420672E16432334)
+NonLockStakingPoolsProxy: [0xd9747a98624f0B64B4412632C420672E16432334](https://blastscan.io/address/0xd9747a98624f0B64B4412632C420672E16432334)
+
+NonLockStakingPoolsImplementation: [0xFa9397f1fa04FF86A89efB5663fE1c8A5544ec6b](https://blastscan.io/address/0xFa9397f1fa04FF86A89efB5663fE1c8A5544ec6b)
 
 RoleControlProxy: [0x779f9C230523003641009B870b36aea398F830f9](https://blastscan.io/address/0x779f9C230523003641009B870b36aea398F830f9)
 
