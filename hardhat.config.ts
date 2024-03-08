@@ -5,6 +5,7 @@ import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
 import 'hardhat-deploy';
 import '@nomiclabs/hardhat-solhint';
+import '@nomicfoundation/hardhat-verify';
 
 module.exports = {
   typechain: {
@@ -78,5 +79,22 @@ module.exports = {
     etherscan: {
       apiKey: process.env.EXPLORER_API_KEY,
     },
-  }
+  },
+
+  etherscan: {
+    apiKey: {
+      blast_sepolia: process.env.EXPLORER_API_KEY,
+    },
+    customChains: [
+      {
+        network: 'blast_sepolia',
+        chainId: 168587773,
+        urls: {
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
+          browserURL: 'https://sepolia.blastscan.io',
+        },
+      },
+    ],
+  },
 };
