@@ -12,9 +12,9 @@ interface IIDOPool {
   error AlreadyStarted();
   error FudingGoalNotReached();
   error IDONotEnded();
-  
+  error NotClaimable();
   struct Position {
-    address token;
+    uint256 fyAmount;
     uint256 amount;
   }
 

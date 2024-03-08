@@ -13,6 +13,8 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
 
   address public idoToken;
   bool public isFinalized;
+  uint256 public claimableTime;
+  bool public isClaimable;
 
   uint256 public idoPrice; // expected price of ido
   uint256 public idoSize; // total amount of ido token
@@ -43,6 +45,11 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     if (block.timestamp >= idoStartTime) revert AlreadyStarted();
     _;
   }
+  modifier claimable() {
+    if (!isFinalized) revert NotFinalized();
+    if (block.timestamp < claimableTime) revert NotClaimable();
+    _;
+  }
 
   function __IDOPoolAbstract_init(
     address buyToken_,
@@ -52,7 +59,8 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     address treasury_,
     uint256 idoStartTime_,
     uint256 idoEndTime_,
-    uint256 minimumFundingGoal_
+    uint256 minimumFundingGoal_,
+    uint256 price_
   ) internal onlyInitializing {
     __IDOPoolAbstract_init_unchained(
       buyToken_,
@@ -62,7 +70,8 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
       treasury_,
       idoStartTime_,
       idoEndTime_,
-      minimumFundingGoal_
+      minimumFundingGoal_,
+      price_
     );
     __Ownable_init();
   }
@@ -75,7 +84,8 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     address treasury_,
     uint256 idoStartTime_,
     uint256 idoEndTime_,
-    uint256 minimumFundingGoal_
+    uint256 minimumFundingGoal_,
+    uint256 price_
   ) internal onlyInitializing {
     buyToken = buyToken_;
     fyToken = fyToken_;
@@ -85,13 +95,14 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     idoStartTime = idoStartTime_;
     idoEndTime = idoEndTime_;
     minimumFundingGoal = minimumFundingGoal_;
+    idoPrice = price_;
   }
 
   function setIDOToken(
     address _token,
     uint256 _idoDecimals
   ) external onlyOwner {
-    if (isFinalized) revert ('InvalidToken');
+    if (isFinalized) revert("InvalidToken");
     idoToken = _token;
     idoDecimals = _idoDecimals;
   }
@@ -103,18 +114,14 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     returns (uint256 price, uint256 decimals);
 
   /**
+   * @dev finalize the IDO pool
+   * cannot finalize if IDO has not reached end time or minimum funding goal is not reached.
    *
-   * @param price usd price of 10 ** decimals of IDO token
+   * Finalize will calulate total value of USD funded for IDO and determine IDO size
    */
-  function setTokenPriceInUSD(uint256 price) external onlyOwner notStart {
-    idoPrice = price;
-  }
-
   function finalize() external onlyOwner notFinalized {
-    if (block.timestamp < idoEndTime)
-      revert IDONotEnded();
-    else if (idoSize < minimumFundingGoal)
-      revert FudingGoalNotReached();
+    if (block.timestamp < idoEndTime) revert IDONotEnded();
+    else if (idoSize < minimumFundingGoal) revert FudingGoalNotReached();
     (snapshotTokenPrice, snapshotPriceDecimals) = _getTokenUSDPrice();
     fundedUSDValue =
       ((totalFunded[buyToken] + totalFunded[fyToken]) * snapshotTokenPrice) /
@@ -123,7 +130,14 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     isFinalized = true;
   }
 
-  function getPostionValue(
+  /**
+   * @dev Calculate amount of IDO token receivable by staker
+   * @param pos position of staker
+   * and amount of stake token to return after finalization
+   * @return allocated
+   * @return excessive
+   */
+  function _getPostionValue(
     Position memory pos
   ) internal view returns (uint256 allocated, uint256 excessive) {
     uint256 posInUSD = (pos.amount * snapshotTokenPrice) /
@@ -145,6 +159,36 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     }
   }
 
+  /**
+   * @dev Refund staker after claim and transfer fund to treasury
+   * 
+   * @param pos position of staker
+   * @param staker staker to refund
+   * @param excessAmount amount to refund
+   */
+  function _refundPostition(
+    Position memory pos,
+    address staker,
+    uint256 excessAmount
+  ) internal {
+    if (excessAmount <= pos.fyAmount) {
+      TokenTransfer._transferToken(fyToken, staker, excessAmount);
+      TokenTransfer._transferToken(fyToken, treasury, pos.fyAmount - excessAmount);
+      TokenTransfer._transferToken(buyToken, treasury, pos.amount - pos.fyAmount);
+    } else {
+      TokenTransfer._transferToken(fyToken, staker, pos.fyAmount);
+      TokenTransfer._transferToken(buyToken, staker, excessAmount - pos.fyAmount);
+      TokenTransfer._transferToken(buyToken, treasury, pos.amount - excessAmount);
+    }
+  }
+
+  /**
+   * @dev Participate in IDO
+   *
+   * @param receipient address to participate in IDO
+   * @param token address of token used to particpate, must be either buyToken or fyToken
+   * @param amount amount of token to participate
+   */
   function participate(
     address receipient,
     address token,
@@ -153,10 +197,10 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     if (token != buyToken && token != fyToken)
       revert InvalidParticipateToken(token);
     Position storage position = accountPosition[receipient];
-    if (position.amount != 0 && token != position.token)
-      revert ParticipateWithDifferentToken(token);
+    if (token == fyToken) {
+      position.fyAmount += amount;
+    }
 
-    position.token = token;
     position.amount += amount;
     totalFunded[token] += amount;
 
@@ -165,21 +209,29 @@ abstract contract IDOPoolAbstract is IIDOPool, Ownable2StepUpgradeable {
     emit Participation(receipient, token, amount);
   }
 
-  function claim(address staker) external finalized {
+  /**
+   * @dev Claim refund and IDO token
+   *
+   * @param staker address of staker to claim IDO token1
+   */
+  function claim(address staker) external claimable {
     Position memory pos = accountPosition[staker];
     if (pos.amount == 0) revert NoStaking();
 
-    (uint256 alloc, uint256 excessive) = getPostionValue(pos);
+    (uint256 alloc, uint256 excessive) = _getPostionValue(pos);
 
     delete accountPosition[staker];
     if (excessive > 0)
-      TokenTransfer._transferToken(pos.token, staker, excessive);
-    TokenTransfer._transferToken(pos.token, treasury, pos.amount - excessive);
+      _refundPostition(pos, staker, excessive);
+    // TokenTransfer._transferToken(pos.token, treasury, pos.amount - excessive);
     TokenTransfer._transferToken(idoToken, staker, alloc);
 
     emit Claim(staker, alloc, excessive);
   }
 
+  /**
+   * @dev Withdraw remaining IDO token if funding goal is not reached
+   */
   function withdrawSpareIDO() external finalized onlyOwner {
     uint256 totalValueBought = (idoSize * idoPrice) / (10 ** idoDecimals);
     if (totalValueBought >= fundedUSDValue) return;

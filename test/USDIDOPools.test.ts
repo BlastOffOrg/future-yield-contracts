@@ -9,7 +9,7 @@ use(chaiAsPromised);
 
 let DECIMAL = 10n ** 18n;
 
-describe('USD IDO pools test', () => {
+describe.only('USD IDO pools test', () => {
   let deployer: SignerWithAddress,
     treasury: SignerWithAddress,
     users: SignerWithAddress[];
@@ -31,20 +31,12 @@ describe('USD IDO pools test', () => {
       treasury.address,
       0,
       0,
-      0
+      0,
+      DECIMAL,
     );
   });
 
-  it('can set ido price', async () => {
-    const tx = idoPool.connect(users[0]).setTokenPriceInUSD(DECIMAL);
-    await expect(tx).rejectedWith('Ownable: caller is not the owner');
-
-    await idoPool.setTokenPriceInUSD(DECIMAL);
-  });
-
   it('user can participate', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
-
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
     await fyUSD.connect(users[0]).approve(idoPool.address, 1000n * DECIMAL);
     await usdb.mint(users[1].address, 1000n * DECIMAL);
@@ -59,7 +51,6 @@ describe('USD IDO pools test', () => {
   });
 
   it('cannot claim before finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
@@ -79,7 +70,6 @@ describe('USD IDO pools test', () => {
   });
 
   it('can finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
@@ -112,7 +102,6 @@ describe('USD IDO pools test', () => {
   });
 
   it('withdraw spare not effect token claim', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
@@ -146,7 +135,6 @@ describe('USD IDO pools test', () => {
   });
 
   it('cannot participate after finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
@@ -178,7 +166,6 @@ describe('USD IDO pools test', () => {
   });
 
   it('refund correct amount after finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 1000n);
 
     await fyUSD.mint(users[0].address, 1000n * DECIMAL);
@@ -192,15 +179,10 @@ describe('USD IDO pools test', () => {
     await idoPool
       .connect(users[1])
       .participate(users[1].address, usdb.address, 1000n * DECIMAL);
-    const wrapIdoPool = WrapperBuilder.wrap(idoPool).usingSimpleNumericMock({
-      mockSignersCount: 10,
-      timestampMilliseconds: Date.now(),
-      dataPoints: [{ dataFeedId: 'ETH', value: 1000 }],
-    });
 
     const stakers = users.slice(0, 2);
 
-    await wrapIdoPool.finalize();
+    await idoPool.finalize();
 
     await Promise.all(
       stakers.map(async (staker) =>

@@ -13,7 +13,8 @@ contract USDIDOPool is Initializable, IDOPoolAbstract {
     address treasury_,
     uint256 idoStartTime_,
     uint256 idoEndTime_,
-    uint256 minimumFundingGoal_
+    uint256 minimumFundingGoal_,
+    uint256 idoPrice_
   ) external initializer {
     __IDOPoolAbstract_init(
       usdb_,
@@ -23,7 +24,8 @@ contract USDIDOPool is Initializable, IDOPoolAbstract {
       treasury_,
       idoStartTime_,
       idoEndTime_,
-      minimumFundingGoal_
+      minimumFundingGoal_,
+      idoPrice_
     );
   }
 

@@ -31,20 +31,12 @@ describe('ETH IDO pools test', () => {
       treasury.address,
       0,
       0,
-      0
+      0,
+      DECIMAL
     );
   });
 
-  it('can set ido price', async () => {
-    const tx = idoPool.connect(users[0]).setTokenPriceInUSD(DECIMAL);
-    await expect(tx).rejectedWith('Ownable: caller is not the owner');
-
-    await idoPool.setTokenPriceInUSD(DECIMAL);
-  });
-
   it('user can participate', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
-
     await fyETH.mint(users[0].address, DECIMAL);
 
     await fyETH.connect(users[0]).approve(idoPool.address, DECIMAL);
@@ -60,7 +52,6 @@ describe('ETH IDO pools test', () => {
   });
 
   it('cannot claim before finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyETH.mint(users[0].address, DECIMAL);
@@ -81,7 +72,6 @@ describe('ETH IDO pools test', () => {
   });
 
   it('can finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyETH.mint(users[0].address, DECIMAL);
@@ -115,7 +105,6 @@ describe('ETH IDO pools test', () => {
   });
 
   it('withdraw spare not effect token claim', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyETH.mint(users[0].address, DECIMAL);
@@ -127,9 +116,14 @@ describe('ETH IDO pools test', () => {
       .participate(users[0].address, fyETH.address, DECIMAL);
     await idoPool
       .connect(users[1])
-      .participate(users[1].address, ethers.constants.AddressZero, DECIMAL - 12n, {
-        value: DECIMAL - 12n,
-      });
+      .participate(
+        users[1].address,
+        ethers.constants.AddressZero,
+        DECIMAL - 12n,
+        {
+          value: DECIMAL - 12n,
+        }
+      );
 
     const wrapIdoPool = WrapperBuilder.wrap(idoPool).usingSimpleNumericMock({
       mockSignersCount: 10,
@@ -149,9 +143,7 @@ describe('ETH IDO pools test', () => {
     );
   });
 
-
   it('cannot participate after finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 4000n);
 
     await fyETH.mint(users[0].address, DECIMAL);
@@ -184,7 +176,6 @@ describe('ETH IDO pools test', () => {
   });
 
   it('refund correct amount after finalized', async () => {
-    await idoPool.setTokenPriceInUSD(DECIMAL);
     await idoToken.mint(idoPool.address, DECIMAL * 1000n);
 
     await fyETH.mint(users[0].address, DECIMAL);
@@ -237,5 +228,75 @@ describe('ETH IDO pools test', () => {
         .add(BigNumber.from(DECIMAL / 2n))
         .toBigInt()
     );
+  });
+
+  it('refund correct amount after finalized when stake both type', async () => {
+    await idoToken.mint(idoPool.address, DECIMAL * 1000n);
+
+    await fyETH.mint(users[0].address, DECIMAL);
+    await fyETH.mint(users[1].address, DECIMAL);
+
+    await fyETH.connect(users[0]).approve(idoPool.address, DECIMAL);
+    await fyETH.connect(users[1]).approve(idoPool.address, DECIMAL);
+
+    await idoPool
+      .connect(users[0])
+      .participate(users[0].address, fyETH.address, DECIMAL / 4n);
+    await idoPool
+      .connect(users[0])
+      .participate(
+        users[0].address,
+        ethers.constants.AddressZero,
+        (3n * DECIMAL) / 4n,
+        {
+          value: (3n * DECIMAL) / 4n,
+        }
+      );
+    await idoPool
+      .connect(users[1])
+      .participate(users[1].address, fyETH.address, (3n * DECIMAL) / 4n);
+    await idoPool
+      .connect(users[1])
+      .participate(
+        users[1].address,
+        ethers.constants.AddressZero,
+        DECIMAL / 4n,
+        {
+          value: DECIMAL / 4n,
+        }
+      );
+
+    const wrapIdoPool = WrapperBuilder.wrap(idoPool).usingSimpleNumericMock({
+      mockSignersCount: 10,
+      timestampMilliseconds: Date.now(),
+      dataPoints: [{ dataFeedId: 'ETH', value: 1000 }],
+    });
+
+    const stakers = users.slice(0, 2);
+
+    await wrapIdoPool.finalize();
+    const etherBal = (await Promise.all(
+      stakers.map(async (staker) => ethers.provider.getBalance(staker.address))
+    )).map((b) => b.toBigInt());
+    const txs = await Promise.all(
+      stakers.map(async (staker) =>
+        idoPool.connect(staker).claim(staker.address)
+      )
+    );
+    const bal = await Promise.all(
+      stakers.map(async (user) => {
+        const b = await idoToken.balanceOf(user.address);
+        return b.toBigInt();
+      })
+    );
+    const afterBal = await Promise.all(
+      stakers.map(async (staker) => ethers.provider.getBalance(staker.address))
+    );
+    expect(bal).deep.equal(Array(2).fill(500n * DECIMAL));
+    const fees = await Promise.all(
+      txs.map(async (tx) => getFee(await tx.wait()).toBigInt())
+    );
+    expect(afterBal[0].toBigInt()).eq(etherBal[0] - fees[0] + DECIMAL / 4n);
+    expect(afterBal[1].toBigInt()).eq(etherBal[1] - fees[1]);
   });
 });

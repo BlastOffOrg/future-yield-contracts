@@ -144,7 +144,8 @@ export const deployETHIDOPool = async (
   treasury: string,
   idoStart: number,
   idoEnd: number,
-  minimuFund: BigNumberish
+  minimuFund: BigNumberish,
+  price: BigNumberish
 ): Promise<ETHIDOPool> => {
   const factory = await ethers.getContractFactory('ETHIDOPool', deployer);
   const idoPool = await factory.deploy();
@@ -156,7 +157,8 @@ export const deployETHIDOPool = async (
     true,
     idoStart,
     idoEnd,
-    minimuFund
+    minimuFund,
+    price
   );
   return idoPool;
 };
@@ -170,7 +172,8 @@ export const deployUSDIDOPool = async (
   treasury: string,
   idoStart: number,
   idoEnd: number,
-  minimuFund: BigNumberish
+  minimuFund: BigNumberish,
+  price: BigNumberish
 ): Promise<USDIDOPool> => {
   const factory = await ethers.getContractFactory('USDIDOPool', deployer);
   const idoPool = await factory.deploy();
@@ -182,7 +185,8 @@ export const deployUSDIDOPool = async (
     treasury,
     idoStart,
     idoEnd,
-    minimuFund
+    minimuFund,
+    price
   );
   return idoPool;
 };
