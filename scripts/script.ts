@@ -1,6 +1,7 @@
 import * as hre from 'hardhat';
 import {
   IBlast__factory,
+  IERC20Rebasing__factory,
   LockedStakingPools__factory,
   NonLockStakingPools__factory,
   RoleControl__factory,
@@ -35,6 +36,22 @@ async function main() {
     nonlock.address,
     deployer
   );
+
+  const block = 632465;
+  // const bal = await ethers.provider.getBalance(stakePool.address, block-1);
+  // const afterbal = await ethers.provider.getBalance(stakePool.address, block);
+
+  const usdb = await IERC20Rebasing__factory.connect(
+    '0x4300000000000000000000000000000000000003',
+    deployer
+  );
+
+  const bal = await usdb.balanceOf(stakePool.address, {blockTag: block - 1});
+  const afterbal = await usdb.balanceOf(stakePool.address, {blockTag: block});
+
+  console.log(bal.sub(afterbal));
+
+  console.log(ethers.utils.formatEther(bal.sub(afterbal)));
 
   // const blast = IBlast__factory.connect(
   //   '0x4300000000000000000000000000000000000002',

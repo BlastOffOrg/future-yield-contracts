@@ -422,6 +422,7 @@ contract LockedStakingPools is Initializable, ILockedStaking {
     if (pool.timelock == 0) revert PoolNotExisted(poolId);
     StakingInfo memory staking = stakeInfo[poolId][stakeId];
     if (staking.amount == 0) revert NoStaking();
+    if (staking.user != msg.sender) revert NotStaker(staking.user);
     _updateAccYield(pool.stakeToken);
 
     uint256 yieldedAmnt = (staking.amount *
