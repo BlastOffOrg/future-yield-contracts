@@ -43,6 +43,25 @@ async function main() {
     nonlock.address,
     deployer
   );
+
+  await stakeContract.setBlast(conf.blast);
+  await nonlockContract.setBlast(conf.blast);
+
+  await stakeContract.setUSDBRebasing(conf.usdb);
+  await nonlockContract.setUSDBRebasing(conf.usdb);
+  await stakeContract.addSupportYieldTokens(
+    ethers.constants.AddressZero,
+    fyETH.address
+  );
+  await stakeContract.addSupportYieldTokens(conf.usdb, fyUSD.address);
+  await nonlockContract.addSupportYieldTokens(
+    ethers.constants.AddressZero,
+    fyETH.address
+  );
+  await nonlockContract.addSupportYieldTokens(conf.usdb, fyUSD.address);
+
+  await stakeContract.setTreasury(deployer.address);
+  await nonlockContract.setTreasury(deployer.address);
 }
 
 main()

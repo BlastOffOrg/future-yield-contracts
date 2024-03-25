@@ -43,6 +43,15 @@ async function main() {
     nonlock.address,
     deployer
   );
+
+  await stakeContract.configurePointsOperator(
+    deployer.address,
+    conf.points,
+  );
+  await nonlockContract.configurePointsOperator(
+    deployer.address,
+    conf.points,
+  );
 }
 
 main()

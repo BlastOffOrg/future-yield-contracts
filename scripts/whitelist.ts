@@ -43,6 +43,9 @@ async function main() {
     nonlock.address,
     deployer
   );
+
+  fyETHCont.setEnableWhitelist(false);
+  fyUSDCont.setEnableWhitelist(false);
 }
 
 main()

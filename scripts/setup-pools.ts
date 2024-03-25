@@ -43,6 +43,26 @@ async function main() {
     nonlock.address,
     deployer
   );
+
+  await stakeContract.addLockedPools(
+    5n * 3600n * 24n * 365n,
+    4000,
+    ethers.constants.AddressZero,
+  )
+
+  await stakeContract.addLockedPools(
+    5n * 3600n * 24n * 365n,
+    5000,
+    conf.usdb,
+  );
+  await nonlockContract.addPool(
+    4000,
+    ethers.constants.AddressZero,
+  )
+  await nonlockContract.addPool(
+    5000,
+    conf.usdb,
+  )
 }
 
 main()

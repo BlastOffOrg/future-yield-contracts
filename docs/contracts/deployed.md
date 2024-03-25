@@ -2,34 +2,34 @@
 
 ## Blast Sepolia
 
-fyETH: [0x45BD58322327e6a857E21C3E2927e3Ad51c5b0bF](https://testnet.blastscan.io/address/0x45BD58322327e6a857E21C3E2927e3Ad51c5b0bF)
+fyETH: [0x6bf8f1ff10F1f82B6fFc89114a9cA4F864E57AFe](https://testnet.blastscan.io/address/0x6bf8f1ff10F1f82B6fFc89114a9cA4F864E57AFe)
 
-fyUSD: [0x5D98a292a1e6C78Ca359cE4f2078D57b07C0A8F4](https://testnet.blastscan.io/address/0x5D98a292a1e6C78Ca359cE4f2078D57b07C0A8F4)
+fyUSD: [0x4a2EE4f81c3801ef6aBA5A8007149640E1688127](https://testnet.blastscan.io/address/0x4a2EE4f81c3801ef6aBA5A8007149640E1688127)
 
-LockedStakingPoolsProxy : [0xD74eD71C6176D5d2378C5bA274DAdC2c4de77067](https://testnet.blastscan.io/address/0xD74eD71C6176D5d2378C5bA274DAdC2c4de77067)
+LockedStakingPoolsProxy : [0x88f18baDC79e1Fe5c1425f2828D8b8Bc5A059253](https://testnet.blastscan.io/address/0x88f18baDC79e1Fe5c1425f2828D8b8Bc5A059253)
 
-LockedStakingPoolsImplementation: [0xBac78FE62706Ba883Bc075a0F940Ec4D19C3dB7e](https://testnet.blastscan.io/address/0xBac78FE62706Ba883Bc075a0F940Ec4D19C3dB7e)
+LockedStakingPoolsImplementation: [0xA43D252F4C90A73681e7e98526cF8A78E06cDf2C](https://testnet.blastscan.io/address/0xA43D252F4C90A73681e7e98526cF8A78E06cDf2C)
 
-NonLockStakingPools: [0xCc798E63eE78fecC0760f736B23a5b295595cd4C](https://testnet.blastscan.io/address/0xCc798E63eE78fecC0760f736B23a5b295595cd4C)
+NonLockStakingPools: [0x33b66eF3a789CA0E1bCa45109c07E39bc6c5a4E3](https://testnet.blastscan.io/address/0x33b66eF3a789CA0E1bCa45109c07E39bc6c5a4E3)
 
-RoleControlProxy: [0x267d89cf0c1DAF105290083FC4f5645FAd1B94890](https://testnet.blastscan.io/address/0x267d89cf0c1DAF105290083FC4f5645FAd1B94890)
+RoleControlProxy: [0x35888756dC3b1b4E4e8ADD4B3f7A471eb6D5aEdc](https://testnet.blastscan.io/address/0x35888756dC3b1b4E4e8ADD4B3f7A471eb6D5aEdc)
 
-RoleControlImplementation: [0xF07631b8D4126f7696f31b89B8E80ABE017BFDCc](https://testnet.blastscan.io/address/0xF07631b8D4126f7696f31b89B8E80ABE017BFDCc)
+RoleControlImplementation: [0xEF89a379Dd5294b09bc703Bc89d0bA258841A801](https://testnet.blastscan.io/address/0xEF89a379Dd5294b09bc703Bc89d0bA258841A801)
 
 ## Blast Mainnet
 
-fyETH: [0x8Eb3D1686F96Fa5F4D129372DDf7D43Aaf8e7920](https://blastscan.io/address/0x8Eb3D1686F96Fa5F4D129372DDf7D43Aaf8e7920)
+fyETH: [0x29100147Fd38f02bb78e7Ae77F794003c6d9faa2](https://blastscan.io/address/0x29100147Fd38f02bb78e7Ae77F794003c6d9faa2)
 
-fyUSD: [0xdEA60E66E08543B371d50D0d39420c39580147cE](https://blastscan.io/address/0xdEA60E66E08543B371d50D0d39420c39580147cE)
+fyUSD: [0xF35fdAAF364CAA4008b327C4cb48637942457287](https://blastscan.io/address/0xF35fdAAF364CAA4008b327C4cb48637942457287)
 
-LockedStakingPoolsProxy : [0xd95773E5B1eeDC7fF302a70AcD0eb370927397D2](https://blastscan.io/address/0xd95773E5B1eeDC7fF302a70AcD0eb370927397D2)
+LockedStakingPoolsProxy : [0xB9fD7583c6636cEB4929EafD406c40491757FD9c](https://blastscan.io/address/0xB9fD7583c6636cEB4929EafD406c40491757FD9c)
 
-LockedStakingPoolsImplementation: [0x0832e17eb957389aDd1441b6725Ba80C6ff583c1](https://blastscan.io/address/0x0832e17eb957389aDd1441b6725Ba80C6ff583c1)
+LockedStakingPoolsImplementation: [0xB13BcC1dAA5269BE73Cb883982fAfAfb0C3f0877](https://blastscan.io/address/0xB13BcC1dAA5269BE73Cb883982fAfAfb0C3f0877)
 
-NonLockStakingPoolsProxy: [0xd9747a98624f0B64B4412632C420672E16432334](https://blastscan.io/address/0xd9747a98624f0B64B4412632C420672E16432334)
+NonLockStakingPoolsProxy: [0x88E2BeDde2B93cD39f784dfdB27e822126F260Eb](https://blastscan.io/address/0x88E2BeDde2B93cD39f784dfdB27e822126F260Eb)
 
-NonLockStakingPoolsImplementation: [0xFa9397f1fa04FF86A89efB5663fE1c8A5544ec6b](https://blastscan.io/address/0xFa9397f1fa04FF86A89efB5663fE1c8A5544ec6b)
+NonLockStakingPoolsImplementation: [0xa7a17D3071aa1B963eAab3c220832d07847dcd17](https://blastscan.io/address/0xa7a17D3071aa1B963eAab3c220832d07847dcd17)
 
-RoleControlProxy: [0x779f9C230523003641009B870b36aea398F830f9](https://blastscan.io/address/0x779f9C230523003641009B870b36aea398F830f9)
+RoleControlProxy: [0x779f9C230523003641009B870b36aea398F830f9](https://blastscan.io/address/0xDe6139B413c82267e69EeC8B7FEF598C6eaE0e65)
 
-RoleControlImplementation: [0xff008b6418B886f5aA3901c5e206AEB418988a3A](https://blastscan.io/address/0xff008b6418B886f5aA3901c5e206AEB418988a3A)
+RoleControlImplementation: [0xff008b6418B886f5aA3901c5e206AEB418988a3A](https://blastscan.io/address/0x946a2E7676453029f3c6B3014f23ae205e33b258)
