@@ -7,6 +7,10 @@ import {
   RoleControl__factory,
   YieldToken__factory,
 } from '../typechain';
+import address from './address.json';
+import { BigNumber } from 'ethers';
+import { createWriteStream, readFileSync } from 'fs';
+import { appendFile } from 'fs/promises';
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -37,41 +41,24 @@ async function main() {
     deployer
   );
 
-  const block = 632465;
-  // const bal = await ethers.provider.getBalance(stakePool.address, block-1);
-  // const afterbal = await ethers.provider.getBalance(stakePool.address, block);
+  console.log(address.length);
 
-  const usdb = await IERC20Rebasing__factory.connect(
-    '0x4300000000000000000000000000000000000003',
-    deployer
-  );
-
-  const bal = await usdb.balanceOf(stakePool.address, {blockTag: block - 1});
-  const afterbal = await usdb.balanceOf(stakePool.address, {blockTag: block});
-
-  console.log(bal.sub(afterbal));
-
-  console.log(ethers.utils.formatEther(bal.sub(afterbal)));
-
-  // const blast = IBlast__factory.connect(
-  //   '0x4300000000000000000000000000000000000002',
-  //   deployer
-  // );
-
-  // // await stakeContract.setUSDBRebasing(
-  // //   '0x4200000000000000000000000000000000000022'
-  // // );
-
-  // // await stakeContract.addSupportYieldTokens(
-  // //   '0x4200000000000000000000000000000000000022',
-  // //   fyUSD.address
-  // // );
-
-  // await stakeContract.addLockedPools(
-  //   15552000,
-  //   5000,
-  //   '0x4200000000000000000000000000000000000022'
-  // );
+  for (const addr of address) {
+    try {
+      const eth = await nonlockContract.getUserStakePosition(0, addr);
+      const usd = await nonlockContract.getUserStakePosition(1, addr);
+      const eth_amount = eth.amount.div(BigNumber.from(10n ** 12n)).toString();
+      const usd_amount = usd.amount.div(BigNumber.from(10n ** 12n)).toString();
+      if (eth.amount.toString() !== '0' || usd.amount.toString() !== '0') {
+        const sql = `update blast_points set staking_eth = ${eth_amount}, staking_usd = ${usd_amount} where address = lower("${addr}");\n`;
+        console.log(sql);
+        await appendFile('./scripts/script.sql', sql);
+      }
+    } catch (err) {
+      console.error('error at', addr);
+      break
+    }
+  }
 }
 
 main()
